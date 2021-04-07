@@ -1,0 +1,127 @@
+import React, { useState, useEffect } from 'react';
+import './App.css';
+
+const RandomNumber = (props) => {
+  const [timer, setTimer] = useState(undefined);
+  const [count, setCount] = useState(0);
+  const [number, setNumber] = useState(0);
+  const [start, setStart] = useState(undefined);
+
+  useEffect(() => {
+    setStart(props.start);
+    // eslint-disable-next-line
+  });
+
+  useEffect(() => {
+    console.log('________________start change: ' + props.start);
+    if (props.start) {
+      const timer = setInterval(() => {
+        setCount((prev) => prev + 1);
+      }, 100);
+
+      setTimer(timer);
+
+      return () => {
+        clearInterval(timer);
+      };
+    }
+    // eslint-disable-next-line
+  }, [start]);
+
+  useEffect(() => {
+    if (timer !== undefined) {
+      if (count >= 30) {
+        clearInterval(timer);
+        props.onRandomNumberFinish();
+      } else {
+        const number = Math.floor(Math.random() * 10);
+        setNumber(number);
+      }
+    }
+    // eslint-disable-next-line
+  }, [count]);
+
+  return <div>{number}</div>;
+};
+
+const Prize = (props) => {
+  const [count, setCount] = useState(0);
+
+  const handleRandomNumberFinish = () => {
+    setCount(count + 1);
+    if (count + 1 === props.length) {
+      props.onPrizeFinish();
+    }
+  };
+
+  const numbers = [];
+  for (let i = 0; i < props.length; i++) {
+    numbers.push(
+      <RandomNumber
+        start={props.start}
+        onRandomNumberFinish={handleRandomNumberFinish}
+      />
+    );
+  }
+
+  return <div className='prize'>{numbers}</div>;
+};
+
+const App = () => {
+  const [prizes, _setPrizes] = useState([
+    { name: '1', elements: [6] },
+    { name: '1', elements: [6] },
+  ]);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const handlePrizeFinish = () => {
+    setCurrentIndex(currentIndex + 1);
+  };
+
+  return (
+    <div className='app-container'>
+      <table style={{ width: '60%' }}>
+        {prizes.map((item, index) => (
+          <tr>
+            <td>{item.name}</td>
+            <td>
+              {item.elements.map((element, elementIndex) => (
+                <Prize
+                  length={element}
+                  start={elementIndex === currentIndex}
+                  onPrizeFinish={handlePrizeFinish}
+                />
+              ))}
+            </td>
+          </tr>
+        ))}
+      </table>
+    </div>
+  );
+};
+
+export default App;
+
+
+.app-container {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: black;
+}
+
+.prize {
+  display: flex;
+}
+
+table,
+th,
+td {
+  border: 1px solid black;
+}
+
